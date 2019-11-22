@@ -1,0 +1,17 @@
+Package: Linearregression
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Xuelin Gu
+Maintainer: The package maintainer <xuelingu@umich.edu>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 2.1.0)
+VignetteBuilder: knitr
