@@ -5,11 +5,13 @@
 \alias{factorize}
 \alias{linear_regression}
 \alias{estimate}
+\alias{square}
 \title{Hello, world!}
 \usage{
 linear_regression(formula=y~x1+x2)
 estimate(x,y)
 factorize(x)
+square(x)
 }
 \arguments{
 \item{x, y, formula}{input value}
@@ -41,4 +43,5 @@ formula=y~x1+x2
 lm.D9 <- linear_regression(formula)
 lm.D90 <- estimate(x1,y)
 lm.D99 = factorize(x)
+square(x)
 }

@@ -24,17 +24,22 @@
 #'lm.D9 <- linear_regression(formula)
 #'lm.D90 <- estimate(x1,y)
 #'lm.D99 = factorize(x)
+#'square(x)
 
 #'@usage
 #'linear_regression(formula=y~x1+x2)
 #'estimate(x,y)
 #'factorize(x)
-#'@aliases hello factorize linear_regression estimate
-#'@export factorize linear_regression estimate hello
+#'square(x)
+#'@aliases hello factorize linear_regression estimate square
+#'@export factorize linear_regression estimate hello square
 #'@return the matrix_x
 
 hello <- function() {
   print("Hello, world!")
+}
+square=function(x){
+  return(x^2)
 }
 
 linear_regression=function(formula=y~x1+x2){
