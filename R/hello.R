@@ -25,7 +25,6 @@
 #'lm.D90 <- estimate(x1,y)
 #'lm.D99 = factorize(x)
 #'square(x)
-
 #'@usage
 #'linear_regression(formula=y~x1+x2)
 #'estimate(x,y)
