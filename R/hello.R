@@ -41,18 +41,44 @@ square=function(x){
   return(x^2)
 }
 
-linear_regression=function(formula=y~x1+x2){
+linear_regression=function(formula,coding='reference',intercept=TRUE, reference=1){
   if(length(formula)!=3) stop("The model form is incorrect.")
-  dependent=try(get(as.character(formula[[2]])),silent=TRUE)
-  if(class(dependent)=="try-error") stop("Could not find data to fit model.")
-  covariate_name=labels(terms(formula))
-  covariate_num=length(covariate_name)
-  x=matrix(1,length(dependent),1)
-  for (i in 1:covariate_num){
-    x1=get(covariate_name[i])
+  y=try(get(as.character(formula[[2]])),silent=TRUE)
+  if(class(y)=="try-error") stop("Could not find data to fit model.")
+  x_names=labels(terms(formula))
+  x_num=length(x_names)
+  ###add intercept
+  if(intercept){
+    x=matrix(1,length(y),1)
+    covariate_name=c("intercept")
+  }else{
+    x=vector()
+  }
+  ###form x_matrix
+  for (i in 1:x_num){
+    x1=get(x_names[i])
+    if(typeof(x1)!="double"){
+      names=unique(x1)
+      x1=factorize(x1)
+      if(coding=='reference'){
+        if(reference){
+          x1=x1[,-1]
+        }else if(any(colnames(x1)==reference)){
+          x1=x1[,-which(colnames(x1)==reference)]
+        }
+      }
+      covariate_name=c(covariate_name,colnames(x1))
+    }else{
+      covariate_name=c(covariate_name,x_names[i])
+    }
     x=cbind(x,x1)
   }
-  return(x)
+  colnames(x)=covariate_name
+  if(coding=='means'){
+    x=x[,-'intercept']
+  }
+  result=estimate(x,y)
+  return(result)
 }
 
 estimate=function(x,y){
@@ -76,26 +102,38 @@ estimate=function(x,y){
   SSR=sum((fitted_values-mean(y))^2)
   SSY=sum((y-mean(y))^2)
   ###1.6 rank
-  rank_SSE=n_row-n_col
-  rank_SSR=n_col-1
-  rank_SSY=n_row-1
+  df_SSE=n_row-n_col
+  df_SSR=n_col-1
+  df_SSY=n_row-1
   ###1.7 R-squared and adjusted R-squared
   R_square=SSR/SSY
-  adj_R_square=1-SSE/rank_SSE/(SSY/rank_SSY)
+  adj_R_square=1-SSE/df_SSE/(SSY/df_SSY)
   #####2 inference
   ###2.0 overall F-test
-  F_value=SSR/rank_SSR/(SSE/rank_SSE)
-  F_p_value=pf(F_value, rank_SSR, rank_SSE, lower.tail=F)
+  F_value=SSR/df_SSR/(SSE/df_SSE)
+  F_p_value=pf(F_value, df_SSR, df_SSE, lower.tail=F)
   ###2.1 estimated-variance of estimated-coefficients,i.e. Var_hat(beta_hat)
-  beta_variance=SSE/rank_SSE*x_matrix_inverse
+  beta_variance=SSE/df_SSE*x_matrix_inverse
   beta_SE=sqrt(diag(beta_variance))
   T_value=beta_estimates/beta_SE
-  T_p_value=2*pt(-abs(T_value),rank_SSE)
-  beta_CI_lower=beta_estimates-qt(0.05/2,rank_SSE)*beta_SE
-  beta_CI_lower=beta_estimates+qt(0.05/2,rank_SSE)*beta_SE
+  T_p_value=2*pt(-abs(T_value),df_SSE)
+  beta_CI_lower=beta_estimates-qt(0.05/2,df_SSE)*beta_SE
+  beta_CI_upper=beta_estimates+qt(0.05/2,df_SSE)*beta_SE
   ###3 formatting results
-  return(list(beta_estimates,beta_SE,T_value,T_p_value,beta_CI_lower,beta_CI_lower,fitted_values,residual,
-              SSE,SSR,SSY,rank_SSE,rank_SSR,rank_SSY,F_p_value,R_square,adj_R_square, x_matrix_inverse))
+  beta_result=cbind(beta_estimates,beta_SE,T_value,T_p_value,beta_CI_lower,beta_CI_upper)
+  colnames(beta_result)=c("Estimates","SE", "T value", "p value", "95%CI"," ")
+  Sum_of_squares=matrix(c(SSE,df_SSE,SSR,df_SSR,SSY,df_SSY),3,2)
+  rownames(Sum_of_squares)=c("SSE","SSR","SSY")
+  colnames(Sum_of_squares)=c("SS","df")
+  F_test_and_R_square=matrix(c(F_value,F_p_value,R_square,adj_R_square),1,4)
+  colnames(F_test_and_R_square)=c("F value","p value","R^2","adjusted R^2")
+  colnames(fitted_values)="y_hat"
+  colnames(residual)="y-y_hat"
+  result=list(beta_result,F_test_and_R_square,fitted_values,residual,
+              Sum_of_squares,x_matrix_inverse,beta_variance)
+  names(result)=c("Coefficients","F test and R square","Fitted values","Residuals",
+                  "Sum of Squares","X inverse matrix","Coefficients Variance")
+  return(result)
 }
 
 factorize=function(x){
