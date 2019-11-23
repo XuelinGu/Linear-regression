@@ -16,35 +16,27 @@
 #'formula y ~ x1+x2
 #'@import stats
 #'@examples
-#'x1 <- c(4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14)
-#'y <- c(4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69)
-#'x2 <- c(2, 10, 20, 2, 10, 20, 2, 10, 20, 2)
-#'x <- c(x1, x2)
+#'x1=c(1,2,3,4,5,6,7,8)
+#'y=c(23,24,26,37,38,25,36,40)
+#'x2=c(23,32,34,20,24,56,34,24)
+#'x=c("M","F","F","U","M","F","F","U")
 #'formula=y~x1+x2
 #'lm.D9 <- linear_regression(formula)
 #'lm.D90 <- estimate(x1,y)
 #'lm.D99 = factorize(x)
-#'square(x)
+#'
 #'@usage
-#'linear_regression(formula=y~x1+x2)
+#'linear_regression(formula)
 #'estimate(x,y)
 #'factorize(x)
-#'square(x)
-#'@aliases hello factorize linear_regression estimate square
-#'@export factorize linear_regression estimate hello square
+#'
+#'@aliases factorize linear_regression estimate
+#'@export factorize linear_regression estimate
 #'@return the matrix_x
-
-hello <- function() {
-  print("Hello, world!")
-}
-square=function(x){
-  return(x^2)
-}
 
 linear_regression=function(formula,coding='reference',intercept=TRUE, reference=1){
   if(length(formula)!=3) stop("The model form is incorrect.")
-  y=try(get(as.character(formula[[2]])),silent=TRUE)
-  if(class(y)=="try-error") stop("Could not find data to fit model.")
+  y=get(as.character(formula[[2]]))
   x_names=labels(terms(formula))
   x_num=length(x_names)
   ###add intercept
@@ -81,9 +73,16 @@ linear_regression=function(formula,coding='reference',intercept=TRUE, reference=
   return(result)
 }
 
+
+
 estimate=function(x,y){
-  n_row=nrow(x)
-  n_col=ncol(x)
+  if(length(dim(x))==0){
+    n_row=length(x)
+    n_col=1
+  }else{
+    n_row=nrow(x)
+    n_col=ncol(x)
+  }
   ### 1 estimate
   ###estimating the coefficients using Least Squares Method
   ####1.1 determine x is full-column-rank

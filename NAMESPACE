@@ -2,7 +2,5 @@
 
 export(estimate)
 export(factorize)
-export(hello)
 export(linear_regression)
-export(square)
 import(stats)
