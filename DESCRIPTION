@@ -1,11 +1,10 @@
 Package: Linearregression
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Linear Regression Fitting
 Version: 0.1.0
 Author: Xuelin Gu
 Maintainer: The package maintainer <xuelingu@umich.edu>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: lr is used for fitting linear regression models with numeric or categorical covariates. It can be used to estimate regression coefficients with least square method and make inference based on relevant t-test and F-test (sequential F-test can be realized by F_test).
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
