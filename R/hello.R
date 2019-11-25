@@ -5,6 +5,10 @@
 #' inference based on relevant t-test and F-test (sequential F-test can be realized by F_test).
 #'
 #'@import stats
+#'@import Rcpp
+#'@import RcppArmadillo
+#'@importFrom Rcpp evalCpp
+#'@useDynLib RcppArmadillo
 #'
 #'@param formula an object of class \code{formula}: a symbolic form of the model to be fitted
 #'which should contain both respond and covariate variables. The details of model
@@ -20,7 +24,7 @@
 #'group when \code{coding} = 'reference' (by default). If not specified, model fitting will take
 #'first group occured among the corresponding covariate as reference.
 #'
-#'@keyword lr linearregression
+#'@keyword lr Linearregression
 #'
 #'@details Models for lr are specified symbolically like 'y ~ x1 + x2'. A typical model has the form
 #''response ~ covariates' where response is the numeric response vector and covariates are a
@@ -63,6 +67,10 @@
 #'@export factorize
 #'
 #'@return linear regression fitting coefficients and reference results
+#'
+
+sourceCpp(file='src/matrix_inverse.cpp')
+
 
 lr=function(formula,data,coding='reference',intercept=TRUE, reference=1){
   if(length(formula)!=3) stop("The model form is incorrect.")
@@ -87,44 +95,43 @@ lr=function(formula,data,coding='reference',intercept=TRUE, reference=1){
     x=vector()
   }
   ###form x_matrix
-    for (i in 1:x_num){
-      x1=try(get(x_names[i]),silent=TRUE)
-      if(any(strsplit(x_names[i], "")[[1]]=="$")){
-        position=which(strsplit(x_names[i], "")[[1]]=="$")
-        variable=substring(x_names[i],position+1,nchar(x_names[i]))
-        environment=substring(x_names[i],1,position-1)
-        x1=try(get(variable,get(environment)),silent=TRUE)
-      }
-      if(class(x1)=="try-error"){
-        if(length(data)>0){
-          x1=try(get(x_names[i],data),silent=TRUE)
-        }
-        if(class(x1)=="try-error") stop("Cannot find data to fit model.")
-      }
-      if(typeof(x1)!="double"){
-        names=unique(x1)
-        x1=factorize(x1)
-        if(coding=='reference'){
-          if(reference){
-            x1=x1[,-1]
-          }else if(any(colnames(x1)==reference)){
-            x1=x1[,-which(colnames(x1)==reference)]
-          }
-        }
-        covariate_name=c(covariate_name,colnames(x1))
-      }else{
-        covariate_name=c(covariate_name,x_names[i])
-      }
-      x=cbind(x,x1)
+  for (i in 1:x_num){
+    x1=try(get(x_names[i]),silent=TRUE)
+    if(any(strsplit(x_names[i], "")[[1]]=="$")){
+      position=which(strsplit(x_names[i], "")[[1]]=="$")
+      variable=substring(x_names[i],position+1,nchar(x_names[i]))
+      environment=substring(x_names[i],1,position-1)
+      x1=try(get(variable,get(environment)),silent=TRUE)
     }
-    colnames(x)=covariate_name
+    if(class(x1)=="try-error"){
+      if(length(data)>0){
+        x1=try(get(x_names[i],data),silent=TRUE)
+      }
+      if(class(x1)=="try-error") stop("Cannot find data to fit model.")
+    }
+    if(typeof(x1)!="double"){
+      names=unique(x1)
+      x1=factorize(x1)
+      if(coding=='reference'){
+        if(reference){
+          x1=x1[,-1]
+        }else if(any(colnames(x1)==reference)){
+          x1=x1[,-which(colnames(x1)==reference)]
+        }
+      }
+      covariate_name=c(covariate_name,colnames(x1))
+    }else{
+      covariate_name=c(covariate_name,x_names[i])
+    }
+    x=cbind(x,x1)
+  }
+  colnames(x)=covariate_name
   if(coding=='means'){
     x=x[,-'intercept']
   }
   result=lr.fit(x,y)
   return(result)
 }
-
 
 
 lr.fit=function(x,y){
@@ -135,19 +142,18 @@ lr.fit=function(x,y){
     n_row=nrow(x)
     n_col=ncol(x)
   }
+  x_names=colnames(x)
   ### 1 estimate
   ###estimating the coefficients using Least Squares Method
   ####1.1 determine x is full-column-rank
-  x_matrix=t(x)%*%x
-  x_matrix_inverse=try(solve(t(x)%*%x),silent = TRUE)
-  if(class(x_matrix_inverse)=="try-error") stop("Multiple covariates 'x's can't be linear dependent.")
+  estimates=model_fit(x,y)
+  if(class(estimates)=="try-error") stop("Multiple covariates 'x's can't be linear dependent.")
   ###1.2 estimated coefficients,i.e. beta_hat
-  beta_estimates=x_matrix_inverse%*%t(x)%*%y
+  beta_estimates=estimates[[1]]
   ###1.3 fitted-values,i.e. Y_hat
-  hat_matrix=x%*%x_matrix_inverse%*%t(x)
-  fitted_values=hat_matrix%*%y
+  fitted_values=estimates[[2]]
   ###1.4 residual,i.e. Y-Y_hat
-  residual=y-fitted_values
+  residual=estimates[[3]]
   ###1.5 SSY, SSR and SSE
   SSE=sum(residual^2)
   SSR=sum((fitted_values-mean(y))^2)
@@ -164,8 +170,9 @@ lr.fit=function(x,y){
   F_value=SSR/df_SSR/(SSE/df_SSE)
   F_p_value=pf(F_value, df_SSR, df_SSE, lower.tail=F)
   ###2.1 estimated-variance of estimated-coefficients,i.e. Var_hat(beta_hat)
-  beta_variance=SSE/df_SSE*x_matrix_inverse
-  beta_SE=sqrt(diag(beta_variance))
+  beta_SE=estimates[[5]]
+  beta_variance=estimates[[6]]
+  x_matrix_inverse=estimates[[7]]
   T_value=beta_estimates/beta_SE
   T_p_value=2*pt(-abs(T_value),df_SSE)
   beta_CI_lower=beta_estimates-qt(0.05/2,df_SSE)*beta_SE
@@ -173,13 +180,19 @@ lr.fit=function(x,y){
   ###3 formatting results
   beta_result=cbind(beta_estimates,beta_SE,T_value,T_p_value,beta_CI_lower,beta_CI_upper)
   colnames(beta_result)=c("Estimates","SE", "T value", "p value", "95%CI"," ")
+  rownames(beta_result)=x_names
   Sum_of_squares=matrix(c(SSE,df_SSE,SSR,df_SSR,SSY,df_SSY),3,2)
   rownames(Sum_of_squares)=c("SSE","SSR","SSY")
   colnames(Sum_of_squares)=c("SS","df")
   F_test_and_R_square=matrix(c(F_value,F_p_value,R_square,adj_R_square),1,4)
   colnames(F_test_and_R_square)=c("F value","p value","R^2","adjusted R^2")
+  rownames(F_test_and_R_square)=c('Overall')
   colnames(fitted_values)="y_hat"
   colnames(residual)="y-y_hat"
+  colnames(x_matrix_inverse)=x_names
+  rownames(x_matrix_inverse)=x_names
+  colnames(beta_variance)=x_names
+  rownames(beta_variance)=x_names
   result=list(beta_result,F_test_and_R_square,fitted_values,residual,
               Sum_of_squares,x_matrix_inverse,beta_variance)
   names(result)=c("Coefficients","F test and R square","Fitted values","Residuals",

@@ -3,4 +3,8 @@
 export(factorize)
 export(lr)
 export(lr.fit)
+import(Rcpp)
+import(RcppArmadillo)
 import(stats)
+importFrom(Rcpp,evalCpp)
+useDynLib(RcppArmadillo)
