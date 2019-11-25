@@ -8,7 +8,6 @@
 #'@import Rcpp
 #'@import RcppArmadillo
 #'@importFrom Rcpp evalCpp
-#'@useDynLib RcppArmadillo
 #'
 #'@param formula an object of class \code{formula}: a symbolic form of the model to be fitted
 #'which should contain both respond and covariate variables. The details of model
@@ -68,6 +67,10 @@
 #'
 #'@return linear regression fitting coefficients and reference results
 #'
+## usethis namespace: start
+#' @importFrom Rcpp sourceCpp
+## usethis namespace: end
+NULL
 
 sourceCpp(file='src/matrix_inverse.cpp')
 
