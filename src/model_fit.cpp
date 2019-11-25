@@ -1,9 +1,7 @@
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::plugins(cpp11)]]
-#include "RcppArmadillo.h"
+
+#include <RcppArmadillo.h>
 
 using namespace Rcpp;
-using namespace arma;
 
 // This is a Rcpp function used for least-square matrix operation.
 

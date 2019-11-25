@@ -6,7 +6,9 @@
 #'
 #'@import stats
 #'@import Rcpp
+#'@import RcppArmadillo
 #'@importFrom Rcpp evalCpp
+#'
 #'
 #'@keywords lr Linearregression
 #'
@@ -64,9 +66,6 @@
 #'
 #'@return linear regression fitting coefficients and reference results.
 #'
-
-sourceCpp('src/model_fit.cpp')
-library(Rcpp)
 
 ################################################### main function
 lr = function(formula, data, coding = 'reference', intercept = TRUE, reference = 1) {

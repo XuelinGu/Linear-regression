@@ -10,6 +10,14 @@ vignette: >
 
 **Linearregression** package is used for fitting linear fitting linear regression models with numeric or categorical covariates.
 
+Firstly, *lr()* is used for estimating the linear regression model with similar founctional form below:
+$Y_{i} = \beta_{0} + \beta_{1} X_{1i} + \beta_{2} X_{2i}+ \epsilon_{i}$
+to the estimated equation below:
+$\hat{Y_{i}} = \hat{\beta_{0}} + \hat{\beta_{1}} X_{1i} + \hat{\beta_{2}} X_{2i}$
+based on the observation samples of Y and X's.
+
+Secondly, *lr()* will make some inference tests for estimated coefficients: $\hat{\beta_{0}} , \hat{\beta_{1}}$ and $\hat{\beta_{2}}$.
+
 Compared with commonly used *lm()* in package **stats**, the main function *lr()* in **Linearregression** package is more efficient with same accuracy since we used matrix operation function in Rcpp.
 
 The goal of this tutorial is to give a general introduction to **Linearregression** package. It will help to know how to use *lr()* this package and its performance from following aspects:
@@ -24,7 +32,23 @@ library(Linearregression)
 ```
 
 ##[^1]; Data preparing
-Firstly, *lr()* is used for estimating the  
+There are three compatible types of data from Y and X's: vector, matrix and dataframe. In addition, Y must be numeric and X's can be numeric or categorical. For example,
 ```{r run}
+y = c(23, 24, 26, 37, 38, 25, 36, 40)
+x1 = c(1, 2, 3, 4, 5, 6, 7, 8)
+x2 = c(23, 32, 34, 20, 24, 56, 34, 24)
+x3 = c("M", "F", "F", "U", "M", "F", "U", "M")
+x4 = mtcars$hp ### using 'mtcars' dataframe from R
+```
 
+##[^2]; Arguments and options for *lr()*
+
+There are three compatible types of data from Y and X's: vector, matrix and dataframe. In addition, Y must be numeric and X's can be numeric or categorical. For example,
+
+```{r}
+y = c(23, 24, 26, 37, 38, 25, 36, 40)
+x1 = c(1, 2, 3, 4, 5, 6, 7, 8)
+x2 = c(23, 32, 34, 20, 24, 56, 34, 24)
+x3 = c("M", "F", "F", "U", "M", "F", "U", "M")
+x4 = mtcars$hp ### using 'mtcars' dataframe from R
 ```

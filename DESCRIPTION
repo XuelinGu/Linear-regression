@@ -19,4 +19,4 @@ VignetteBuilder: knitr
 LinkingTo: 
     Rcpp, RcppArmadillo
 Imports: 
-    Rcpp, RcppArmadillo
+    Rcpp (>= 0.12.15)
