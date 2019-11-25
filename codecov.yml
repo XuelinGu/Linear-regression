@@ -10,12 +10,3 @@ coverage:
       default:
         target: auto
         threshold: 1%
-
-r_packages:
-  - covr
-
-after_success:
-  - Rscript -e 'library(covr); codecov()'
-
-env:
-CODECOV_TOKEN="828cbf3c-b647-4a49-98f9-13713770058b"

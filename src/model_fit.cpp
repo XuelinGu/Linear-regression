@@ -1,37 +1,31 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
+#include "RcppArmadillo.h"
 
-#include <RcppArmadillo.h>
 using namespace Rcpp;
+using namespace arma;
 
-
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
+// This is a Rcpp function used for least-square matrix operation.
 
 // [[Rcpp::export]]
 List model_fit(const arma::mat& X, const arma::colvec& y) {
 
   int n = X.n_rows, k = X.n_cols;
 
-  arma::colvec coef = arma::solve(X, y);    // fit model y ~ X
-  arma::colvec fitted_value=X*coef;
+  arma::colvec coef = arma::solve(X, y);    // estimate coefficients for model y ~ X
+
+  arma::colvec fitted_value=X*coef;         // estimated y_hat
+
   arma::colvec res  = y - X*coef;           // residuals
 
-  // std.errors of coefficients
-  double MSE = std::inner_product(res.begin(), res.end(), res.begin(), 0.00)/(n-k);
 
-  arma::colvec std_err = arma::sqrt(MSE * arma::diagvec(arma::pinv(arma::trans(X)*X)));
+  double MSE = std::inner_product(res.begin(), res.end(), res.begin(), 0.00)/(n-k);  // mean squared error
 
-  arma::mat estimated_variance = MSE * arma::pinv(arma::trans(X)*X);
+  arma::colvec std_err = arma::sqrt(MSE * arma::diagvec(arma::pinv(arma::trans(X)*X))); // std.errors of coefficients
 
-  arma::mat x_inverse = arma::pinv(arma::trans(X)*X);
+  arma::mat estimated_variance = MSE * arma::pinv(arma::trans(X)*X); // estimated variance and covariance for coefficients
+
+  arma::mat x_inverse = arma::pinv(arma::trans(X)*X); // tanspose(x)%*%x
 
   return List::create(Named("beta_estimates") = coef,
                       Named("fitted_value") = fitted_value,

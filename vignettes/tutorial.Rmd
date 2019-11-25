@@ -1,0 +1,30 @@
+---
+title: "tutorial"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+#Fitting Linear Regression Model
+
+**Linearregression** package is used for fitting linear fitting linear regression models with numeric or categorical covariates.
+
+Compared with commonly used *lm()* in package **stats**, the main function *lr()* in **Linearregression** package is more efficient with same accuracy since we used matrix operation function in Rcpp.
+
+The goal of this tutorial is to give a general introduction to **Linearregression** package. It will help to know how to use *lr()* this package and its performance from following aspects:
+
+- Item 1[^1]
+- Item 2[^2]
+- Item 3[^2]
+---------
+
+```{r setup}
+library(Linearregression)
+```
+
+##[^1]; Data preparing
+Firstly, *lr()* is used for estimating the  
+```{r run}
+
+```
